@@ -9,7 +9,13 @@ if ! type "zenity" &>/dev/null; then
 fi
 
 zen_download_file="zen.linux-x86_64.tar.xz"
+
 zen_release_tag="$(curl -s https://api.github.com/repos/zen-browser/desktop/releases/latest | jq -r ".tag_name")"
+if [[ "$zen_release_tag" == "null" ]]; then
+  zenity --error --no-wrap --text="Can't get the latest version of Zen Browser."
+  exit 1
+fi
+
 zen_download_tarball="https://github.com/zen-browser/desktop/releases/download/$zen_release_tag/$zen_download_file"
 
 function download_zen {
@@ -26,7 +32,7 @@ function download_zen {
 
   echo "#Sanity Check"
   if [ ! -d "$temp_dir/content/zen" ]; then
-    zenity --error --no-wrap --text="Something went wrong when downloading zen.\nIt isn't present in $temp_dir/content/zen"
+    zenity --error --no-wrap --text="Something went wrong when downloading Zen.\nIt isn't present in $temp_dir/content/zen"
     exit 1
   fi
 
@@ -48,8 +54,17 @@ function uninstall {
   if [ -d "$zen_install" ]; then
     rm -rf $zen_install
   else
-    command ...
+    if ! zen_install="$(zenity --title="Select install location of Zen Browser" --file-selection --directory)/browser"; then
+      exit 1
+    fi
+    rm -rf $zen_install
   fi
+
+  if zenity --title="Uninstall Zen Browser" --question --text="Do you want to remove data ?"; then
+    rm -rf "$HOME/.zen"
+    rm -rf "$HOME/.cache/zen"
+  fi
+
 }
 
 function desktop {
@@ -97,11 +112,11 @@ EOF
 
 function install {
 
-  user_location=$(zenity --title="Zen Browser $zen_release_tag" --list --text="Choose the Install Path" --column="Path" --column="" "$default_install_location" "Recommanded default install location" "Choose" "Choose the install location")
+  user_location=$(zenity --title="Zen Browser $zen_release_tag" --list --text="Select the Install Path" --column="Path" --column="" "$default_install_location" "Recommanded default install location" "Select" "Select the install location")
 
   case "$user_location" in
-    Choose)
-      if ! zen_install="$(zenity --file-selection --directory)/browser"; then
+    Select)
+      if ! zen_install="$(zenity --title="Select install location of Zen Browser" --file-selection --directory)/browser"; then
         exit 1
       fi
       ;;
@@ -128,11 +143,14 @@ function install {
 
 }
 
-action=$(zenity --title="Zen Browser $zen_release_tag" --list --hide-header --text="Choose the Action" --column="Action" Install Uninstall)
+action=$(zenity --title="Zen Browser $zen_release_tag" --list --hide-header --text="Select the Action" --column="Action" Install Uninstall)
 
 case "$action" in
   Install)
     install
+    ;;
+  Uninstall)
+    uninstall
     ;;
   "")
     exit 0
