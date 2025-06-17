@@ -1,5 +1,30 @@
 #!/usr/bin/env bash
 
+function check_dependency {
+    commands=("wget" "curl" "jq" "uuidgen" "tar")
+    commandes_miss=()
+
+    for cmd in "${commands[@]}"; do
+        if ! command -v "$cmd" &> /dev/null; then
+            commandes_miss+=("$cmd")
+        fi
+    done
+
+    if [ ${#commandes_miss[@]} -ne 0 ]; then
+        echo "Error: The following commands are not installed:" 1>&2
+        for cmd in "${commandes_miss[@]}"; do
+            echo "- $cmd" 1>&2
+        done
+        return 1
+    else
+        return 0
+    fi
+}
+
+if ! check_dependency; then
+  exit 1
+fi
+
 default_install_location="$HOME/.zen/browser"
 zen_install="${2-$default_install_location}"
 
