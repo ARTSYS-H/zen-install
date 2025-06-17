@@ -18,17 +18,21 @@ chmod +x zen-install.sh
 ## Commands:
 
 - **install [location]**
+
   Installs Zen to the specified location, or the default one (~/.zen/browser)
 
 - **uninstall [location]**
+
   Removes Zen from the specified location, or the default one (~/.zen/browser)
 
   Note: this will keep your data should you wish to return or move it
 
 - **uninstall-data**
+
   Fully removes Zen data from your system.
 
 - **desktop [location]**
+
   Attempts to create a desktop entry for the specified installation of Zen, or the default one (~/.zen/browser)
 
 ## Tests
