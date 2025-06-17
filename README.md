@@ -7,7 +7,7 @@ Install latest [Zen](https://zen-browser.app) version Easily, for non Flatpak us
 To install Zen, you just need to download and run zen-install.sh 
 
 ```bash
-wget ...
+wget https://raw.githubusercontent.com/ARTSYS-H/zen-install/refs/heads/main/zen-install.sh
 chmod +x zen-install.sh
 
 # yay, now you can use the script!
@@ -17,23 +17,19 @@ chmod +x zen-install.sh
 ```
 ## Commands:
 
-### install [location]
+- **install [location]**
+  Installs Zen to the specified location, or the default one (~/.zen/browser)
 
-Installs Zen to the specified location, or the default one (~/.zen/browser)
+- **uninstall [location]**
+  Removes Zen from the specified location, or the default one (~/.zen/browser)
 
-### uninstall [location]
+  Note: this will keep your data should you wish to return or move it
 
-Removes Zen from the specified location, or the default one (~/.zen/browser)
+- **uninstall-data**
+  Fully removes Zen data from your system.
 
-Note: this will keep your data should you wish to return or move it
-
-### uninstall-data
-
-Fully removes Zen data from your system.
-
-### desktop [location]
-
-Attempts to create a desktop entry for the specified installation of Zen, or the default one (~/.zen/browser)
+- **desktop [location]**
+  Attempts to create a desktop entry for the specified installation of Zen, or the default one (~/.zen/browser)
 
 ## Tests
 
