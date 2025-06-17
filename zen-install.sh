@@ -25,7 +25,7 @@ function download_zen {
   mkdir -p "$temp_dir/content"
 
   echo "#Downloading zen to $temp_dir/zen.tar.xz"
-  wget -O "$temp_dir/zen.tar.xz" "$zen_download_tarball"
+  wget -O "$temp_dir/zen.tar.xz" "$zen_download_tarball" 2>&1 | sed -u 's/.* \([0-9]\+%\)\ \+\([0-9.]\+.\) \(.*\)/\1\n# Downloading at \2\/s, ETA \3/' | zenity --progress --title="Downloading Zen Browser" --auto-close --auto-kill
 
   echo "#Extracting zen to $temp_dir/content"
   tar -xvJf "$temp_dir/zen.tar.xz" -C "$temp_dir/content"
@@ -60,6 +60,8 @@ function uninstall {
     rm -rf $zen_install
   fi
 
+  rm -rf "$HOME/.local/share/applications/zen.desktop"
+
   if zenity --title="Uninstall Zen Browser" --question --text="Do you want to remove data ?"; then
     rm -rf "$HOME/.zen"
     rm -rf "$HOME/.cache/zen"
@@ -69,12 +71,12 @@ function uninstall {
 
 function desktop {
 
-  if [! -d "$zen_install"]; then
+  if [ ! -d "$zen_install" ]; then
     zenity --error --no-wrap --text="Zen does not exist a $zen_install"
     exit 1
   fi
 
-  if [! -d "$HOME/.local/share/applications"]; then
+  if [ ! -d "$HOME/.local/share/applications" ]; then
     zenity --error --no-wrap --text="$HOME/.local/share/applications doesn't exist.\nYou may have to proceed manually!"
     exit 1
   fi
@@ -135,7 +137,7 @@ function install {
 
   (download_zen) | zenity --title="Install Zen Browser $zen_release_tag" --progress --pulsate --no-cancel --auto-close
 
-  if zenity --title="Zen Browser is installed!" --question --text="To use open zen in terminals, use: PATH=\$PATH:$zen_install/zen\nDo you want a desktop entry ? (so zen will appear on your system's navigation)"; then
+  if zenity --title="Zen Browser is installed!" --question --text="To use open Zen in terminals, update your \$PATH\nDo you want a desktop entry ? (so zen will appear on your system's navigation)"; then
     desktop
   else
     exit 0
