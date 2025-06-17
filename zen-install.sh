@@ -26,6 +26,8 @@ function uninstall {
   if [ -f "$HOME/.local/share/applications/zen.desktop" ]; then
     echo "===== Zen desktop file exists. Removing it! ====="
     rm -rfv "$HOME/.local/share/applications/zen.desktop"
+    # refresh desktop environment
+    update-desktop-database "$HOME/.local/share/applications/"
   fi
 
 }
@@ -84,8 +86,8 @@ function install {
 
   echo "===== Using release tagged $zen_release_tag ====="
 
-  if [ -d "$zen_install" ]; then
-    echo "A Zen install already exists at $zen_install. Please remove it before installing Zen."
+  if [ -f "$zen_install/zen" ]; then
+    echo "Error: A Zen install already exists at $zen_install. Please remove it before installing Zen." 1>&2
     exit 1
   fi
 
@@ -99,8 +101,8 @@ function install {
   tar -xvJf "$temp_dir/zen.tar.xz" -C "$temp_dir/content"
 
   # sanity check
-  if [ ! -d "$temp_dir/content/zen" ]; then
-      echo "Something went wrong when downloading Zen. It isn't present in $temp_dir/content/zen"
+  if [ ! -f "$temp_dir/content/zen/zen" ]; then
+      echo "Error: Something went wrong when downloading Zen. It isn't present in $temp_dir/content/zen" 1>&2
       exit 1
   fi
 
