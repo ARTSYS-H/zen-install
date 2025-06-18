@@ -38,6 +38,8 @@ fi
 
 zen_download_tarball="https://github.com/zen-browser/desktop/releases/download/$zen_release_tag/$zen_download_file"
 
+zen_download_desktop_file="https://raw.githubusercontent.com/ARTSYS-H/zen-install/refs/heads/main/zen.desktop"
+
 function uninstall {
 
   if [ -f "$zen_install/zen" ]; then
@@ -78,23 +80,16 @@ function desktop {
   temp_dir="/tmp/$(uuidgen)"
   mkdir -p "$temp_dir"
 
-  cat << EOF > "$temp_dir/zen.desktop"
-[Desktop Entry]
-Encoding=UTF-8
-Version=1.0
-Name=Zen Browser
-Comment=Experience tranquillity while browsing the web without people tracking you!
-GenericName=Web Browser
-Keywords=Internet;WWW;Browser;Web;Explorer
-Exec=$zen_install/zen %u
-Terminal=false
-X-MultipleArgs=false
-Type=Application
-Icon=$zen_install/browser/chrome/icons/default/default128.png
-Categories=GNOME;GTK;Network;WebBrowser;Internet;Utility;
-MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;x-scheme-handler/chrome;video/webm;application/x-xpinstall;
-StartupNotify=true
-EOF
+  echo "===== Downloading zen.desktop to $temp_dir/zen.desktop ====="
+  wget -O "$temp_dir/zen.desktop" "$zen_download_desktop_file"
+
+  # sanity check
+  if [ ! -f "$temp_dir/zen.desktop" ]; then
+      echo "Error: Something went wrong when downloading zen.desktop. It isn't present in $temp_dir/zen.desktop" 1>&2
+      exit 1
+  fi
+
+  sed -i "s|\$zen_install|$zen_install|g" "$temp_dir/zen.desktop"
 
   mv "$temp_dir/zen.desktop" "$HOME/.local/share/applications/"
   rm -rf "$temp_dir"
