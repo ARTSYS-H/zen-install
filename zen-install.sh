@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 function check_dependency {
-    commands=("wget" "curl" "jq" "uuidgen" "tar")
+    # commands=("wget" "curl" "jq" "uuidgen" "tar")
+    commands=("wget" "curl" "jq" "tar")
     commandes_miss=()
 
     for cmd in "${commands[@]}"; do
@@ -77,8 +78,9 @@ function desktop {
     exit 1
   fi
 
-  temp_dir="/tmp/$(uuidgen)"
-  mkdir -p "$temp_dir"
+  # temp_dir="/tmp/$(uuidgen)"
+  # mkdir -p "$temp_dir"
+  temp_dir=$(mktemp -d)
 
   echo "===== Downloading zen.desktop to $temp_dir/zen.desktop ====="
   wget -O "$temp_dir/zen.desktop" "$zen_download_desktop_file"
@@ -111,8 +113,9 @@ function install {
     exit 1
   fi
 
-  temp_dir="/tmp/$(uuidgen)"
-  mkdir -p "$temp_dir/content"
+  # temp_dir="/tmp/$(uuidgen)"
+  # mkdir -p "$temp_dir/content"
+  temp_dir=$(mktemp -d)
 
   echo "===== Downloading zen to $temp_dir/zen.tar.xz ====="
   wget -O "$temp_dir/zen.tar.xz" "$zen_download_tarball"
