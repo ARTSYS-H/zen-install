@@ -121,6 +121,7 @@ function install {
   wget -O "$temp_dir/zen.tar.xz" "$zen_download_tarball"
 
   echo "===== Extracting zen to $temp_dir/content ====="
+  mkdir -p "$temp_dir/content"
   tar -xvJf "$temp_dir/zen.tar.xz" -C "$temp_dir/content"
 
   # sanity check
