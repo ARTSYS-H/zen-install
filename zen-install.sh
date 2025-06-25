@@ -60,7 +60,7 @@ function uninstall {
 
 }
 
-function uninstall_data {
+function remove_data {
   echo "===== Removing all Zen Data ! ====="
   rm -rfv "$HOME/.zen"
   rm -rfv "$HOME/.cache/zen"
@@ -151,7 +151,7 @@ function help {
     echo "help:"
     echo "  install [location]   -- installs the latest version of Zen to the specified directory"
     echo "  uninstall [location] -- removes Zen installation (but not data) from your system"
-    echo "  uninstall-data -- removes Zen data from your system (Take care!)"
+    echo "  remove-data -- removes Zen data from your system (Take care!)"
     echo "  desktop [location] -- creates a desktop entry for your Zen installation"
     echo "  help -- you should know what this does since you're here :)"
     echo ""
@@ -174,8 +174,8 @@ case $command in
     uninstall)
         uninstall $2
         ;;
-    uninstall-data)
-        uninstall_data
+    remove-data)
+        remove_data
         ;;
     desktop)
         desktop $2
