@@ -27,7 +27,7 @@ chmod +x zen-install.sh
 
   Note: this will keep your data should you wish to return or move it
 
-- **uninstall-data**
+- **remove-data**
 
   Fully removes Zen data from your system.
 
