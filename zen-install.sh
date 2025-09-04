@@ -1,39 +1,50 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-function check_dependency {
-    # commands=("wget" "curl" "jq" "uuidgen" "tar")
-    commands=("wget" "curl" "jq" "tar")
-    commandes_miss=()
+# Function to check if required dependencies are installed.
+# This function iterates over a list of commands and checks if they are available in the system's PATH.
+# If any command is missing, it will be added to a list of missing commands.
+# Returns 1 if any dependency is missing, otherwise returns 0.
+check_dependency() {
+  # List of required commands, separated by spaces
+  commands="wget curl jq tar"
+  commands_miss=""
 
-    for cmd in "${commands[@]}"; do
-        if ! command -v "$cmd" &> /dev/null; then
-            commandes_miss+=("$cmd")
-        fi
-    done
-
-    if [ ${#commandes_miss[@]} -ne 0 ]; then
-        echo "Error: The following commands are not installed:" 1>&2
-        for cmd in "${commandes_miss[@]}"; do
-            echo "- $cmd" 1>&2
-        done
-        return 1
-    else
-        return 0
+  for cmd in $commands; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+      if [ -z "$commands_miss" ]; then
+        commands_miss="$cmd"
+      else
+        commands_miss="$commands_miss $cmd"
+      fi
     fi
+  done
+
+  if [ -n "$commands_miss" ]; then
+    echo "ERROR: The following commands are not installed:" 1>&2
+    for cmd in $commands_miss; do
+      echo "- $cmd" 1>&2
+    done
+    return 1
+  else
+    return 0
+  fi
 }
 
+# Check dependencies before proceeding
 if ! check_dependency; then
   exit 1
 fi
 
+# Default installation location for Zen Browser
 default_install_location="$HOME/.zen/browser"
 zen_install="${2-$default_install_location}"
 
 zen_download_file="zen.linux-x86_64.tar.xz"
 
+# Fetch the latest release tag from GitHub API using curl and jq
 zen_release_tag="$(curl -s https://api.github.com/repos/zen-browser/desktop/releases/latest | jq -r ".tag_name")"
-if [[ "$zen_release_tag" == "null" ]]; then
-  echo "Error: Can't get the latest version of Zen Browser." 1>&2
+if [ "$zen_release_tag" == "null" ]; then
+  echo "ERROR: Can't get the latest version of Zen Browser." 1>&2
   exit 1
 fi
 
@@ -41,45 +52,50 @@ zen_download_tarball="https://github.com/zen-browser/desktop/releases/download/$
 
 zen_download_desktop_file="https://raw.githubusercontent.com/ARTSYS-H/zen-install/refs/heads/main/zen.desktop"
 
-function uninstall {
+# Function to uninstall Zen Browser from the specified location
+uninstall() {
 
   if [ -f "$zen_install/zen" ]; then
     echo "===== Zen install exists. Removing it! ====="
     rm -rfv $zen_install
   else
-    echo "Error: Zen does not exist at $zen_install" 1>&2
+    echo "ERROR: Zen does not exist at $zen_install" 1>&2
     exit 1
   fi
 
+  # Check if the desktop entry exists and remove it
   if [ -f "$HOME/.local/share/applications/zen.desktop" ]; then
     echo "===== Zen desktop file exists. Removing it! ====="
     rm -rfv "$HOME/.local/share/applications/zen.desktop"
     # refresh desktop environment
-    update-desktop-database "$HOME/.local/share/applications/"
+    if command -v update-update-desktop-database >/dev/null 2>&1; then
+      update-desktop-database "$HOME/.local/share/applications/"
+    fi
   fi
 
 }
 
-function remove_data {
+# Function to remove all Zen Browser data from the system
+remove_data() {
   echo "===== Removing all Zen Data ! ====="
   rm -rfv "$HOME/.zen"
   rm -rfv "$HOME/.cache/zen"
 }
 
-function desktop {
+# Function to create a desktop entry for Zen Browser
+desktop() {
 
   if [ ! -f "$zen_install/zen" ]; then
-    echo "Error: Zen does not exist at $zen_install" 1>&2
+    echo "ERROR: Zen does not exist at $zen_install" 1>&2
     exit 1
   fi
 
   if [ ! -d "$HOME/.local/share/applications" ]; then
-    echo "Error: $HOME/.local/share/applications doesn't exist. You may have to proceed manually!" 1>&2
+    echo "ERROR: $HOME/.local/share/applications doesn't exist. You may have to proceed manually!" 1>&2
     exit 1
   fi
 
-  # temp_dir="/tmp/$(uuidgen)"
-  # mkdir -p "$temp_dir"
+  # Create a temporary directory for downloading the desktop file
   temp_dir=$(mktemp -d)
 
   echo "===== Downloading zen.desktop to $temp_dir/zen.desktop ====="
@@ -87,10 +103,11 @@ function desktop {
 
   # sanity check
   if [ ! -f "$temp_dir/zen.desktop" ]; then
-      echo "Error: Something went wrong when downloading zen.desktop. It isn't present in $temp_dir/zen.desktop" 1>&2
+      echo "ERROR: Something went wrong when downloading zen.desktop. It isn't present in $temp_dir/zen.desktop" 1>&2
       exit 1
   fi
 
+  # Replace the placeholder in the desktop file with the actual installation path
   sed -i "s|\$zen_install|$zen_install|g" "$temp_dir/zen.desktop"
 
   mv "$temp_dir/zen.desktop" "$HOME/.local/share/applications/"
@@ -99,22 +116,25 @@ function desktop {
   chmod +x "$HOME/.local/share/applications/zen.desktop"
 
   # refresh desktop environment
-  update-desktop-database "$HOME/.local/share/applications/"
+  if command -v update-update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database "$HOME/.local/share/applications/"
+  fi
+    
 
   echo "===== Successfully added Zen Browser to your desktop entries! ====="
 }
 
-function install {
+# Function to install Zen Browser
+install() {
 
   echo "===== Using release tagged $zen_release_tag ====="
 
   if [ -f "$zen_install/zen" ]; then
-    echo "Error: A Zen install already exists at $zen_install. Please remove it before installing Zen." 1>&2
+    echo "ERROR: A Zen install already exists at $zen_install. Please remove it before installing Zen." 1>&2
     exit 1
   fi
 
-  # temp_dir="/tmp/$(uuidgen)"
-  # mkdir -p "$temp_dir/content"
+  # Create a temporary directory for downloading and extracting the tarball
   temp_dir=$(mktemp -d)
 
   echo "===== Downloading zen to $temp_dir/zen.tar.xz ====="
@@ -126,10 +146,11 @@ function install {
 
   # sanity check
   if [ ! -f "$temp_dir/content/zen/zen" ]; then
-      echo "Error: Something went wrong when downloading Zen. It isn't present in $temp_dir/content/zen" 1>&2
+      echo "ERROR: Something went wrong when downloading Zen. It isn't present in $temp_dir/content/zen" 1>&2
       exit 1
   fi
 
+  # Create the installation directory if it doesn't exist
   mkdir -p "$zen_install"
 
   echo "===== Moving zen install to $zen_install ====="
@@ -147,13 +168,14 @@ function install {
   
 }
 
-function help {
+# Function to display help information
+help() {
     echo "help:"
     echo "  install [location]   -- installs the latest version of Zen to the specified directory"
     echo "  uninstall [location] -- removes Zen installation (but not data) from your system"
-    echo "  remove-data -- removes Zen data from your system (Take care!)"
-    echo "  desktop [location] -- creates a desktop entry for your Zen installation"
-    echo "  help -- you should know what this does since you're here :)"
+    echo "  remove-data          -- removes Zen data from your system (Take care!)"
+    echo "  desktop [location]   -- creates a desktop entry for your Zen installation"
+    echo "  help                 -- you should know what this does since you're here :)"
     echo ""
     echo "note: location defaults to $HOME/.zen/browser (recommanded) if unspecified"
 }
