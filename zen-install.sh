@@ -1,8 +1,11 @@
 #!/bin/sh
 
-# Fonction pour vérifier les dépendances
+# Function to check if required dependencies are installed.
+# This function iterates over a list of commands and checks if they are available in the system's PATH.
+# If any command is missing, it will be added to a list of missing commands.
+# Returns 1 if any dependency is missing, otherwise returns 0.
 check_dependency() {
-  # Liste des commandes requises
+  # List of required commands, separated by spaces
   commands="wget curl jq tar"
   commands_miss=""
 
@@ -27,18 +30,18 @@ check_dependency() {
   fi
 }
 
-# Vérification des dépendances
+# Check dependencies before proceeding
 if ! check_dependency; then
   exit 1
 fi
 
-# Emplacement d'installation par défaut
+# Default installation location for Zen Browser
 default_install_location="$HOME/.zen/browser"
 zen_install="${2-$default_install_location}"
 
 zen_download_file="zen.linux-x86_64.tar.xz"
 
-# Récupération de la dernière version
+# Fetch the latest release tag from GitHub API using curl and jq
 zen_release_tag="$(curl -s https://api.github.com/repos/zen-browser/desktop/releases/latest | jq -r ".tag_name")"
 if [ "$zen_release_tag" == "null" ]; then
   echo "ERROR: Can't get the latest version of Zen Browser." 1>&2
@@ -49,7 +52,7 @@ zen_download_tarball="https://github.com/zen-browser/desktop/releases/download/$
 
 zen_download_desktop_file="https://raw.githubusercontent.com/ARTSYS-H/zen-install/refs/heads/main/zen.desktop"
 
-# Fonction de désinstallation
+# Function to uninstall Zen Browser from the specified location
 uninstall() {
 
   if [ -f "$zen_install/zen" ]; then
@@ -60,6 +63,7 @@ uninstall() {
     exit 1
   fi
 
+  # Check if the desktop entry exists and remove it
   if [ -f "$HOME/.local/share/applications/zen.desktop" ]; then
     echo "===== Zen desktop file exists. Removing it! ====="
     rm -rfv "$HOME/.local/share/applications/zen.desktop"
@@ -71,14 +75,14 @@ uninstall() {
 
 }
 
-# Fonction pour supprimer les données
+# Function to remove all Zen Browser data from the system
 remove_data() {
   echo "===== Removing all Zen Data ! ====="
   rm -rfv "$HOME/.zen"
   rm -rfv "$HOME/.cache/zen"
 }
 
-# Fonction pour créer une entrée de bureau
+# Function to create a desktop entry for Zen Browser
 desktop() {
 
   if [ ! -f "$zen_install/zen" ]; then
@@ -91,8 +95,7 @@ desktop() {
     exit 1
   fi
 
-  # temp_dir="/tmp/$(uuidgen)"
-  # mkdir -p "$temp_dir"
+  # Create a temporary directory for downloading the desktop file
   temp_dir=$(mktemp -d)
 
   echo "===== Downloading zen.desktop to $temp_dir/zen.desktop ====="
@@ -104,7 +107,7 @@ desktop() {
       exit 1
   fi
 
-  # Remplacement du chemin
+  # Replace the placeholder in the desktop file with the actual installation path
   sed -i "s|\$zen_install|$zen_install|g" "$temp_dir/zen.desktop"
 
   mv "$temp_dir/zen.desktop" "$HOME/.local/share/applications/"
@@ -121,7 +124,7 @@ desktop() {
   echo "===== Successfully added Zen Browser to your desktop entries! ====="
 }
 
-# Fonction d'installation
+# Function to install Zen Browser
 install() {
 
   echo "===== Using release tagged $zen_release_tag ====="
@@ -131,8 +134,7 @@ install() {
     exit 1
   fi
 
-  # temp_dir="/tmp/$(uuidgen)"
-  # mkdir -p "$temp_dir/content"
+  # Create a temporary directory for downloading and extracting the tarball
   temp_dir=$(mktemp -d)
 
   echo "===== Downloading zen to $temp_dir/zen.tar.xz ====="
@@ -148,6 +150,7 @@ install() {
       exit 1
   fi
 
+  # Create the installation directory if it doesn't exist
   mkdir -p "$zen_install"
 
   echo "===== Moving zen install to $zen_install ====="
@@ -165,13 +168,14 @@ install() {
   
 }
 
+# Function to display help information
 help() {
     echo "help:"
     echo "  install [location]   -- installs the latest version of Zen to the specified directory"
     echo "  uninstall [location] -- removes Zen installation (but not data) from your system"
-    echo "  remove-data -- removes Zen data from your system (Take care!)"
-    echo "  desktop [location] -- creates a desktop entry for your Zen installation"
-    echo "  help -- you should know what this does since you're here :)"
+    echo "  remove-data          -- removes Zen data from your system (Take care!)"
+    echo "  desktop [location]   -- creates a desktop entry for your Zen installation"
+    echo "  help                 -- you should know what this does since you're here :)"
     echo ""
     echo "note: location defaults to $HOME/.zen/browser (recommanded) if unspecified"
 }
