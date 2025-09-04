@@ -43,7 +43,7 @@ zen_download_file="zen.linux-x86_64.tar.xz"
 
 # Fetch the latest release tag from GitHub API using curl and jq
 zen_release_tag="$(curl -s https://api.github.com/repos/zen-browser/desktop/releases/latest | jq -r ".tag_name")"
-if [ "$zen_release_tag" == "null" ]; then
+if [ "$zen_release_tag" = "null" ]; then
   echo "ERROR: Can't get the latest version of Zen Browser." 1>&2
   exit 1
 fi
@@ -57,7 +57,7 @@ uninstall() {
 
   if [ -f "$zen_install/zen" ]; then
     echo "===== Zen install exists. Removing it! ====="
-    rm -rfv $zen_install
+    rm -rfv "$zen_install"
   else
     echo "ERROR: Zen does not exist at $zen_install" 1>&2
     exit 1
@@ -103,8 +103,8 @@ desktop() {
 
   # sanity check
   if [ ! -f "$temp_dir/zen.desktop" ]; then
-      echo "ERROR: Something went wrong when downloading zen.desktop. It isn't present in $temp_dir/zen.desktop" 1>&2
-      exit 1
+    echo "ERROR: Something went wrong when downloading zen.desktop. It isn't present in $temp_dir/zen.desktop" 1>&2
+    exit 1
   fi
 
   # Replace the placeholder in the desktop file with the actual installation path
@@ -119,7 +119,6 @@ desktop() {
   if command -v update-update-desktop-database >/dev/null 2>&1; then
     update-desktop-database "$HOME/.local/share/applications/"
   fi
-    
 
   echo "===== Successfully added Zen Browser to your desktop entries! ====="
 }
@@ -146,15 +145,15 @@ install() {
 
   # sanity check
   if [ ! -f "$temp_dir/content/zen/zen" ]; then
-      echo "ERROR: Something went wrong when downloading Zen. It isn't present in $temp_dir/content/zen" 1>&2
-      exit 1
+    echo "ERROR: Something went wrong when downloading Zen. It isn't present in $temp_dir/content/zen" 1>&2
+    exit 1
   fi
 
   # Create the installation directory if it doesn't exist
   mkdir -p "$zen_install"
 
   echo "===== Moving zen install to $zen_install ====="
-  mv $temp_dir/content/zen/** "$zen_install/"
+  mv "$temp_dir"/content/zen/** "$zen_install/"
 
   echo "===== Removing temporary directory ====="
   rm -rf "$temp_dir"
@@ -165,48 +164,48 @@ install() {
   echo "To use open zen in terminals, use:"
   echo "PATH=\$PATH:$zen_install/zen"
   echo "=========================================="
-  
+
 }
 
 # Function to display help information
 help() {
-    echo "help:"
-    echo "  install [location]   -- installs the latest version of Zen to the specified directory"
-    echo "  uninstall [location] -- removes Zen installation (but not data) from your system"
-    echo "  remove-data          -- removes Zen data from your system (Take care!)"
-    echo "  desktop [location]   -- creates a desktop entry for your Zen installation"
-    echo "  help                 -- you should know what this does since you're here :)"
-    echo ""
-    echo "note: location defaults to $HOME/.zen/browser (recommanded) if unspecified"
+  echo "help:"
+  echo "  install [location]   -- installs the latest version of Zen to the specified directory"
+  echo "  uninstall [location] -- removes Zen installation (but not data) from your system"
+  echo "  remove-data          -- removes Zen data from your system (Take care!)"
+  echo "  desktop [location]   -- creates a desktop entry for your Zen installation"
+  echo "  help                 -- you should know what this does since you're here :)"
+  echo ""
+  echo "note: location defaults to $HOME/.zen/browser (recommanded) if unspecified"
 }
 
 # Check if at least one argument is provided
 if [ $# -lt 1 ]; then
-    help
-    exit 1
+  help
+  exit 1
 fi
 
 # Get the command and the argument
 command=$1
 
 case $command in
-    install)
-        install $2
-        ;;
-    uninstall)
-        uninstall $2
-        ;;
-    remove-data)
-        remove_data
-        ;;
-    desktop)
-        desktop $2
-        ;;
-    help)
-        help
-        ;;
-    *)
-        echo "Error: Unknown command '$command'." 1>&2
-        help
-        ;;
+install)
+  install "$2"
+  ;;
+uninstall)
+  uninstall "$2"
+  ;;
+remove-data)
+  remove_data
+  ;;
+desktop)
+  desktop "$2"
+  ;;
+help)
+  help
+  ;;
+*)
+  echo "Error: Unknown command '$command'." 1>&2
+  help
+  ;;
 esac
