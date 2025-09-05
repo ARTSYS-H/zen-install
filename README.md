@@ -42,7 +42,7 @@ List of tested platforms:
 | Platforms    |     Versions     |        Test        |
 |--------------|:----------------:|:------------------:|
 | Ubuntu       | `24.04` `24.10`  | :white_check_mark: |
-| Alpine Linux | `1.22`           | :white_check_mark: |
+| Alpine Linux | `3.21`           | :white_check_mark: |
 
 ## Contribution
 
